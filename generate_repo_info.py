@@ -101,6 +101,13 @@ def parse_whitespace(s):
     return s
 
 
+def format_sent(s):
+    s = s.capitalize()
+    if s and s[-1].isalnum():
+        return s + '.'
+    return s
+
+
 def parse_example(example: str) -> str:
     example = parse_whitespace(example.strip(' \n"\'`'))
     example = re.split(r'["`]', example)[0]
@@ -110,6 +117,9 @@ def parse_example(example: str) -> str:
         if example.lower().startswith(prefix):
             example = example[len(prefix):]
     example = example.strip(' ,')  # Fix ", " from "Hey Mycroft, ..."
+    if any(example.lower().startswith(word + ' ') for word in ['who', 'what', 'when', 'where']):
+        example = example.rstrip('?') + '?'
+    example = format_sent(example)
     return example
 
 
@@ -144,8 +154,8 @@ def generate_summary(github: Github, skill_entry: SkillEntry):
         'name': skill_entry.name,
         'author': find_secton('author', sections) or skill_entry.author.capitalize(),
         'github_username': skill_entry.author,
-        'short_desc': parse_whitespace(short_desc.replace('\n', ' ')),
-        'description': parse_whitespace(find_secton('description', sections) or ''),
+        'short_desc': format_sent(parse_whitespace(short_desc.replace('\n', ' '))).rstrip('.'),
+        'description': format_sent(parse_whitespace(find_secton('description', sections) or '')),
         'examples': [parse_example(i) for i in find_examples(sections)],
         'requires': parse_whitespace(find_secton('require', sections, 0.9) or '').split(),
         'excludes': parse_whitespace(find_secton('exclude', sections, 0.9) or '').split()
