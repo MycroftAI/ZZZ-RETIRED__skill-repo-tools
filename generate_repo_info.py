@@ -33,14 +33,14 @@ root = dirname(abspath(__file__))
 
 
 class TempClone:
-    def __init__(self, url):
+    def __init__(self, url: str):
         import posixpath
         self.path = join(gettempdir(), posixpath.basename(url))
         if not isdir(self.path):
             Repo.clone_from(url, self.path)
         self.git = Git(self.path)
 
-    def write(self, path, content):
+    def write(self, path: str, content: str):
         with open(join(self.path, path), 'w') as f:
             f.write(content)
         self.git.add(path)
@@ -94,18 +94,23 @@ def find_secton(name: str, sections: dict, min_conf: float = 0.5) -> Optional[st
     return None if conf < min_conf else sections[title]
 
 
-def parse_whitespace(s):
+def parse_whitespace(s: str) -> str:
     s = re.sub(r'(?<!\n)\n(?!\n)', r' ', s)
     s = re.sub(r'\n+', '\n', s)
     s = re.sub(r' +', r' ', s)
     return s
 
 
-def format_sent(s):
-    s = s.capitalize()
+def format_sent(s: str) -> str:
+    s = caps(s)
     if s and s[-1].isalnum():
         return s + '.'
     return s
+
+
+def caps(s: str) -> str:
+    """Capitalize first letter without lowercasing the rest"""
+    return s[:1].upper() + s[1:]
 
 
 def parse_example(example: str) -> str:
@@ -133,7 +138,7 @@ def find_examples(sections: dict) -> list:
 def find_title_info(sections: dict, skill_name: str) -> tuple:
     title_section = next(iter(sections))
     if compare(norm(title_section), norm(skill_name)) >= 0.3:
-        return title_section.capitalize(), sections[title_section]
+        return caps(title_section), sections[title_section]
     else:
         return norm(skill_name).title(), sections['']
 
@@ -152,7 +157,7 @@ def generate_summary(github: Github, skill_entry: SkillEntry):
         'repo': repo.html_url,
         'title': title,
         'name': skill_entry.name,
-        'author': find_secton('author', sections) or skill_entry.author.capitalize(),
+        'author': find_secton('author', sections) or caps(skill_entry.author),
         'github_username': skill_entry.author,
         'short_desc': format_sent(parse_whitespace(short_desc.replace('\n', ' '))).rstrip('.'),
         'description': format_sent(parse_whitespace(find_secton('description', sections) or '')),
