@@ -151,7 +151,7 @@ def upload_summaries(github: Github, summaries: dict):
         print('You don\'t have write permissions')
         exit(1)
     clone = TempClone('https://github.com/mycroftai/mycroft-skills-data')
-    clone.write('skill-metadata.json', json.dumps(summaries))
+    clone.write('skill-metadata.json', json.dumps(summaries, indent=4))
 
 
 def main():
