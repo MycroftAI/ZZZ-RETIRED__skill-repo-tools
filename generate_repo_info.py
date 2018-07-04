@@ -124,8 +124,8 @@ def generate_summary(github: Github, skill_entry: SkillEntry):
     author = skill_entry.extract_author(skill_entry.url)
     repo_name = skill_entry.extract_repo_name(skill_entry.url)
     repo_id = '/'.join([author, repo_name])
-    repo: Repository = github.get_repo(repo_id)
-    readme_file: ContentFile = repo.get_readme()
+    repo = github.get_repo(repo_id)  # type: Repository
+    readme_file = repo.get_readme()  # type: ContentFile
     readme = readme_file.decoded_content.decode()
     sections = extract_sections(readme)
     title, short_desc = find_title_info(sections, skill_entry.name)
@@ -146,7 +146,7 @@ def generate_summary(github: Github, skill_entry: SkillEntry):
 
 def upload_summaries(github: Github, summaries: dict):
     print('Uploading skill-metadata.json...')
-    repo: Repository = github.get_repo('MycroftAI/mycroft-skills-data')
+    repo = github.get_repo('MycroftAI/mycroft-skills-data')  # type: Repository
     if not repo.permissions.push:
         print('You don\'t have write permissions')
         exit(1)
