@@ -102,7 +102,15 @@ def parse_whitespace(s):
 
 
 def parse_example(example: str) -> str:
-    return re.split(r'["`]', parse_whitespace(example.strip(' \n"\'`')))[0]
+    example = parse_whitespace(example.strip(' \n"\'`'))
+    example = re.split(r'["`]', example)[0]
+
+    # Remove "Hey Mycroft, "
+    for prefix in ['hey mycroft', 'mycroft', 'hey-mycroft']:
+        if example.lower().startswith(prefix):
+            example = example[len(prefix):]
+    example = example.strip(' ,')  # Fix ", " from "Hey Mycroft, ..."
+    return example
 
 
 def find_examples(sections: dict) -> list:
