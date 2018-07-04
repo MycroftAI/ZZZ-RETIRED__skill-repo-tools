@@ -71,7 +71,7 @@ def extract_sections(readme_content: str) -> OrderedDict:
     for line in readme_content.split('\n'):
         line = line.strip()
         if line.startswith('#'):
-            last_section = line.strip('# ').lower()
+            last_section = line.strip('# ')
             sections[last_section] = ''
         else:
             sections[last_section] += '\n' + line
@@ -122,8 +122,12 @@ def parse_example(example: str) -> str:
         if example.lower().startswith(prefix):
             example = example[len(prefix):]
     example = example.strip(' ,')  # Fix ", " from "Hey Mycroft, ..."
-    if any(example.lower().startswith(word + ' ') for word in ['who', 'what', 'when', 'where']):
-        example = example.rstrip('?') + '?'
+    if any(
+            example.lower().startswith(word + suffix + ' ')
+            for word in ['who', 'what', 'when', 'where']
+        for suffix in ["'s", "s", "", "'d", "d" "'re", "re"]
+    ):
+        example = example.rstrip('?.') + '?'
     example = format_sent(example)
     return example
 
