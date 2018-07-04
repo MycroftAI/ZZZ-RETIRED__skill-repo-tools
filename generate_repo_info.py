@@ -12,7 +12,7 @@ from github import Github, GithubException
 from github.ContentFile import ContentFile
 from github.Repository import Repository
 from msk.util import ask_for_github_credentials, register_git_injector
-from msm import MycroftSkillsManager, SkillEntry
+from msm import MycroftSkillsManager, SkillEntry, SkillRepo
 from os import isatty
 from os.path import dirname, abspath, isfile, join, isdir
 from prettyparse import create_parser
@@ -102,7 +102,7 @@ def parse_whitespace(s):
 
 
 def parse_example(example: str) -> str:
-    return re.split(r'[ \n"\'`]', parse_whitespace(example.strip(' \n"\'`')))[0]
+    return re.split(r'["`]', parse_whitespace(example.strip(' \n"\'`')))[0]
 
 
 def find_examples(sections: dict) -> list:
@@ -159,7 +159,8 @@ def main():
     github = load_github()
 
     summaries = {}
-    for skill_entry in MycroftSkillsManager().list():
+    repo = SkillRepo(path=join(gettempdir(), 'mycroft-skills-repo'))
+    for skill_entry in MycroftSkillsManager(repo).list():
         if not skill_entry.url:
             continue
         print('Generating {}...'.format(skill_entry.name))
