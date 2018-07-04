@@ -160,7 +160,7 @@ def main():
 
     summaries = {}
     repo = SkillRepo(path=join(gettempdir(), 'mycroft-skills-repo'))
-    for skill_entry in MycroftSkillsManager(repo).list():
+    for skill_entry in MycroftSkillsManager(repo=repo).list():
         if not skill_entry.url:
             continue
         print('Generating {}...'.format(skill_entry.name))
