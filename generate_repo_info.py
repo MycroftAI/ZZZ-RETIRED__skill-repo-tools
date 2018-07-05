@@ -94,13 +94,6 @@ def find_secton(name: str, sections: dict, min_conf: float = 0.5) -> Optional[st
     return None if conf < min_conf else sections[title]
 
 
-def parse_whitespace(s: str) -> str:
-    s = re.sub(r'(?<!\n)\n(?!\n)', r' ', s)
-    s = re.sub(r'\n+', '\n', s)
-    s = re.sub(r' +', r' ', s)
-    return s
-
-
 def format_sent(s: str) -> str:
     s = caps(s)
     if s and s[-1].isalnum():
@@ -114,7 +107,7 @@ def caps(s: str) -> str:
 
 
 def parse_example(example: str) -> str:
-    example = parse_whitespace(example.strip(' \n"\'`'))
+    example = example.strip(' \n"\'`')
     example = re.split(r'["`]', example)[0]
 
     # Remove "Hey Mycroft, "
@@ -125,7 +118,7 @@ def parse_example(example: str) -> str:
     if any(
             example.lower().startswith(word + suffix + ' ')
             for word in ['who', 'what', 'when', 'where']
-        for suffix in ["'s", "s", "", "'d", "d" "'re", "re"]
+            for suffix in ["'s", "s", "", "'d", "d" "'re", "re"]
     ):
         example = example.rstrip('?.') + '?'
     example = format_sent(example)
@@ -163,11 +156,11 @@ def generate_summary(github: Github, skill_entry: SkillEntry):
         'name': skill_entry.name,
         'author': find_secton('author', sections) or caps(skill_entry.author),
         'github_username': skill_entry.author,
-        'short_desc': format_sent(parse_whitespace(short_desc.replace('\n', ' '))).rstrip('.'),
-        'description': format_sent(parse_whitespace(find_secton('description', sections) or '')),
+        'short_desc': format_sent(short_desc.replace('\n', ' ')).rstrip('.'),
+        'description': format_sent(find_secton('description', sections) or ''),
         'examples': [parse_example(i) for i in find_examples(sections)],
-        'requires': parse_whitespace(find_secton('require', sections, 0.9) or '').split(),
-        'excludes': parse_whitespace(find_secton('exclude', sections, 0.9) or '').split()
+        'requires': (find_secton('require', sections, 0.9) or '').split(),
+        'excludes': (find_secton('exclude', sections, 0.9) or '').split()
     }
 
 
