@@ -89,7 +89,7 @@ def norm(x: str) -> str:
     return x.lower().replace('-', ' ')
 
 
-def find_secton(name: str, sections: dict, min_conf: float = 0.5) -> Optional[str]:
+def find_section(name: str, sections: dict, min_conf: float = 0.5) -> Optional[str]:
     title, conf = max([(title, compare(title, name)) for title in sections], key=lambda x: x[1])
     return None if conf < min_conf else sections[title]
 
@@ -127,7 +127,7 @@ def parse_example(example: str) -> str:
 
 def find_examples(sections: dict) -> list:
     return re.findall(
-        string=find_secton('examples', sections) or find_secton('usage', sections) or '',
+        string=find_section('examples', sections) or find_section('usage', sections) or '',
         pattern=r'(?<=[-*]).*', flags=re.MULTILINE
     )
 
@@ -154,13 +154,13 @@ def generate_summary(github: Github, skill_entry: SkillEntry):
         'repo': repo.html_url,
         'title': title,
         'name': skill_entry.name,
-        'author': find_secton('author', sections) or caps(skill_entry.author),
+        'author': find_section('author', sections) or caps(skill_entry.author),
         'github_username': skill_entry.author,
         'short_desc': format_sent(short_desc.replace('\n', ' ')).rstrip('.'),
-        'description': format_sent(find_secton('description', sections) or ''),
+        'description': format_sent(find_section('description', sections) or ''),
         'examples': [parse_example(i) for i in find_examples(sections)],
-        'requires': (find_secton('require', sections, 0.9) or '').split(),
-        'excludes': (find_secton('exclude', sections, 0.9) or '').split()
+        'requires': (find_section('require', sections, 0.9) or '').split(),
+        'excludes': (find_section('exclude', sections, 0.9) or '').split()
     }
 
 
