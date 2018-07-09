@@ -154,7 +154,10 @@ def generate_summary(github: Github, skill_entry: SkillEntry):
         'repo': repo.html_url,
         'title': title,
         'name': skill_entry.name,
-        'author': find_section('author', sections) or caps(skill_entry.author),
+        'author': (
+            find_section('credits', sections, 0.9) or
+            find_section('author', sections, 0.9) or caps(skill_entry.author)
+        ),
         'github_username': skill_entry.author,
         'short_desc': format_sent(short_desc.replace('\n', ' ')).rstrip('.'),
         'description': format_sent(find_section('description', sections) or ''),
