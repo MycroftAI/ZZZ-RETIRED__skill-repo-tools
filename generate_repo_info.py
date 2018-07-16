@@ -26,13 +26,14 @@ Generates a JSON containing info on Mycroft Skills in the Skill Repo
     Output json file
 
 :-u --upload
-    Whether to upload result to mycroft-skills-metric
+    Whether to upload result to mycroft-skills-data repo
 '''
 
 root = dirname(abspath(__file__))
 
 
 class TempClone:
+    """Create a clone in a temp dir used to write and push file changes"""
     def __init__(self, url: str):
         import posixpath
         self.path = join(gettempdir(), posixpath.basename(url))
@@ -49,6 +50,7 @@ class TempClone:
 
 
 def load_github() -> Github:
+    """Creates Github api object from token.txt, GITHUB_TOKEN variable, or by asking the user"""
     if isfile(join(root, 'token.txt')):
         with open(join(root, 'token.txt')) as f:
             token = f.read().strip()
@@ -66,6 +68,7 @@ def load_github() -> Github:
 
 
 def extract_sections(readme_content: str) -> OrderedDict:
+    """Returns {'Header Title': 'content under\nheader'} from readme markdown"""
     last_section = ''
     sections = OrderedDict({last_section: ''})
     for line in readme_content.split('\n'):
@@ -86,15 +89,18 @@ def compare(a: str, b: str) -> float:
 
 
 def norm(x: str) -> str:
+    """Normalize string for comparison between skill-names and spaced names"""
     return x.lower().replace('-', ' ')
 
 
 def find_section(name: str, sections: dict, min_conf: float = 0.5) -> Optional[str]:
+    """Return the section content containing the heading that matches `name` most closely"""
     title, conf = max([(title, compare(title, name)) for title in sections], key=lambda x: x[1])
     return None if conf < min_conf else sections[title]
 
 
 def format_sent(s: str) -> str:
+    """ this is a test -> This is a test. """
     s = caps(s)
     if s and s[-1].isalnum():
         return s + '.'
@@ -107,6 +113,7 @@ def caps(s: str) -> str:
 
 
 def parse_example(example: str) -> str:
+    """ "hey mycroft, what is this" -> What is this? """
     example = example.strip(' \n"\'`')
     example = re.split(r'["`]', example)[0]
 
@@ -126,6 +133,10 @@ def parse_example(example: str) -> str:
 
 
 def find_examples(sections: dict) -> list:
+    """
+    Example: {'Examples': ' - "Hey Mycroft, how are you?"\n - "Hey Mycroft, perform test" <<< Does a test'}
+    Returns: ['How are you?', 'Perform test.']
+    """
     return re.findall(
         string=find_section('examples', sections) or find_section('usage', sections) or '',
         pattern=r'(?<=[-*]).*', flags=re.MULTILINE
@@ -133,6 +144,7 @@ def find_examples(sections: dict) -> list:
 
 
 def find_title_info(sections: dict, skill_name: str) -> tuple:
+    """Determines if first section contains a title (or something else like "Description")"""
     title_section = next(iter(sections))
     if compare(norm(title_section), norm(skill_name)) >= 0.3:
         return caps(title_section), sections[title_section]
